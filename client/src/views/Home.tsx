@@ -1,24 +1,9 @@
 import React, { useState } from "react";
 import { MoonIcon, SunIcon } from "@heroicons/react/solid";
-
-type Theme = "light" | "dark";
+import useTheme from "../hooks/useTheme";
 
 const Home: React.FC = () => {
-  const [theme, setTheme] = useState<Theme>("light");
-
-  const toggleTheme = () => {
-    const currentTheme = theme;
-    const root = document.getElementById("root");
-
-    if (root) {
-      if (currentTheme === "dark") {
-        root.classList.remove("dark");
-      } else {
-        root.classList.add("dark");
-      }
-    }
-    setTheme(theme === "light" ? "dark" : "light");
-  };
+  const [theme, toggleTheme] = useTheme();
 
   return (
     <div className="container mx-auto">

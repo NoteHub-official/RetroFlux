@@ -10,9 +10,9 @@
 
 @layer utilities {
   .color-bg {
-    @apply dark:bg-zinc-800 bg-gray-100;
+    @apply bg-gray-100 dark:bg-zinc-800;
   }
   .color-text {
-    @apply dark:text-gray-50 text-gray-900;
+    @apply text-gray-900 dark:text-gray-50;
   }
 }
