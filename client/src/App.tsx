@@ -1,9 +1,19 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import * as React from "react";
+import { Routes, Route } from "react-router-dom";
+import cx from "classnames";
+// Views
+import Components from "./views/Components";
+import Home from "./views/Home";
 
 function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return (
+    <div className="App color-bg">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/components" element={<Components />} />
+      </Routes>
+    </div>
+  );
 }
 
 export default App;

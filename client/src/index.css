@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .App {
+    @apply min-h-screen;
+  }
+}
+
+@layer utilities {
+  .color-bg {
+    @apply dark:bg-zinc-800 bg-gray-100;
+  }
+  .color-text {
+    @apply dark:text-gray-50 text-gray-900;
+  }
+}
