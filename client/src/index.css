@@ -6,6 +6,11 @@
   .App {
     @apply min-h-screen;
   }
+  .btn-theme {
+    @apply bg-gray-500 p-2 m-4 outline-none rounded-md text-white cursor-pointer
+  hover:bg-gray-700 focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 focus:ring-offset-gray-50
+    transition dark:ring-offset-zinc-600 dark:hover:bg-gray-400;
+  }
 }
 
 @layer utilities {
