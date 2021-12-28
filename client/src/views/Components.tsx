@@ -1,5 +1,6 @@
 import React from "react";
-import { MoonIcon, SunIcon } from "@heroicons/react/solid";
+import { MoonIcon, SunIcon, MailIcon } from "@heroicons/react/solid";
+import { Button } from "../components/Button";
 import useTheme from "../hooks/useTheme";
 
 const Components: React.FC = () => {
@@ -9,7 +10,7 @@ const Components: React.FC = () => {
     <div>
       <nav
         className="fixed bg-white h-[4.75rem] w-full border-b-[1px]
-        flex justify-between items-center px-4 color-nav color-divider"
+        flex justify-between items-center px-4 color-nav color-divider z-10"
       >
         <h1 className="text-2xl font-medium italic">Component Reference</h1>
         <button onClick={toggleTheme} className="btn-theme">
@@ -25,12 +26,19 @@ const Components: React.FC = () => {
         <div>
           <h2 className="font-medium my-4">Button</h2>
           <div className="flex justify-center items-center space-x-8">
-            <button className="btn btn-primary-outline">Click Me</button>
-            <button className="btn btn-primary-filled">Click Me</button>
+            <Button className="btn-primary-outline">
+              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
+              Click Me
+            </Button>
+            <Button className="btn-primary-filled">
+              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
+              Click Me
+            </Button>
+            <Button className="btn-primary-inverted">
+              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
+              Click Me
+            </Button>
           </div>
-          <pre>
-            {`<button className="btn btn-primary-outline">click me</button>\n<button className="btn btn-primary-filled">click me</button>`}
-          </pre>
         </div>
       </div>
     </div>

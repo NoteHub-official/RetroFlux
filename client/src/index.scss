@@ -47,4 +47,8 @@
   .color-divider {
     @apply border-gray-300 dark:border-zinc-700;
   }
+
+  .disabled {
+    @apply hover:shadow-none hover:bg-none;
+  }
 }
