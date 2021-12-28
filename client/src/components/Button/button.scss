@@ -1,0 +1,15 @@
+.btn {
+  @apply px-4 py-2 bg-white rounded-md shadow-md capitalize font-semibold transition
+  ring-offset-gray-50 tracking-wide focus:ring-[3px] focus:ring-offset-2 dark:focus:ring-2
+  dark:shadow-none dark:hover:shadow-none dark:ring-offset-zinc-600;
+
+  &-primary-filled {
+    @apply bg-blue-500 hover:bg-blue-600  text-gray-50
+    shadow-blue-300 focus:ring-blue-400 hover:shadow-lg hover:shadow-blue-300;
+  }
+
+  &-primary-outline {
+    @apply border border-blue-500 bg-transparent shadow-none hover:bg-transparent
+    hover:shadow-none text-blue-500 hover:bg-blue-100;
+  }
+}
