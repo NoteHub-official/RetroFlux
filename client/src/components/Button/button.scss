@@ -1,7 +1,7 @@
 .btn {
   @apply px-4 py-2 bg-white rounded-md shadow-md capitalize font-semibold transition
   ring-offset-gray-50 tracking-wide focus:ring-[3px] focus:ring-offset-2 dark:focus:ring-2
-  dark:shadow-none dark:hover:shadow-none dark:ring-offset-zinc-600;
+  dark:shadow-none dark:hover:shadow-none dark:ring-offset-zinc-700;
 
   &-primary-filled {
     @apply bg-blue-500 hover:bg-blue-600  text-gray-50
@@ -9,7 +9,7 @@
   }
 
   &-primary-outline {
-    @apply border border-blue-500 bg-transparent shadow-none hover:bg-transparent
-    hover:shadow-none text-blue-500 hover:bg-blue-100;
+    @apply border border-blue-500 bg-blue-400 shadow-none
+    hover:shadow-none text-blue-500 bg-opacity-0 hover:bg-opacity-[0.15];
   }
 }

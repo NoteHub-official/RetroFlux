@@ -22,9 +22,15 @@ const Components: React.FC = () => {
       </nav>
       <nav className="h-[4.75rem]"></nav>
       <div className="container mx-auto px-4 max-w-6xl h-screen prose prose-lg">
-        <h2 className="font-medium my-4">Button</h2>
-        <div className="flex justify-center items-center">
-          <button className="btn btn-primary-outline">click me</button>
+        <div>
+          <h2 className="font-medium my-4">Button</h2>
+          <div className="flex justify-center items-center space-x-8">
+            <button className="btn btn-primary-outline">Click Me</button>
+            <button className="btn btn-primary-filled">Click Me</button>
+          </div>
+          <pre>
+            {`<button className="btn btn-primary-outline">click me</button>\n<button className="btn btn-primary-filled">click me</button>`}
+          </pre>
         </div>
       </div>
     </div>
