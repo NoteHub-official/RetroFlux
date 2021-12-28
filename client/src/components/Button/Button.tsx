@@ -15,7 +15,7 @@ export const Button: React.FC<
         "btn",
         className,
         { "opacity-50": disabled || loading },
-        { "cursor-not-allowed": disabled }
+        { "cursor-not-allowed": disabled || loading }
       )}
       disabled={disabled || loading}
     >

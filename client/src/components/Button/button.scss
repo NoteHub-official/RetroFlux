@@ -7,7 +7,7 @@
     @apply bg-blue-500 text-gray-50 shadow-blue-300;
 
     &:not(:disabled) {
-      @apply hover:shadow-blue-300 hover:bg-blue-600 hover:shadow-lg;
+      @apply hover:shadow-blue-300 hover:bg-blue-600 hover:shadow-lg dark:hover:shadow-none;
     }
   }
 
