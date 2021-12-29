@@ -6,7 +6,7 @@ import Home from "./views/Home";
 
 function App() {
   return (
-    <div className="App color-bg">
+    <div className="App">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/components" element={<Components />} />

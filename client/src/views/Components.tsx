@@ -1,45 +1,57 @@
 import React from "react";
-import { MoonIcon, SunIcon, MailIcon } from "@heroicons/react/solid";
-import { Button } from "../components/Button";
-import useTheme from "../hooks/useTheme";
+import { ColorModeSwitcher } from "../ColorModeSwitcher";
+import {
+  useColorModeValue,
+  Box,
+  Text,
+  Button,
+  Input,
+  Divider,
+  InputGroup,
+  InputLeftElement,
+  InputLeftAddon,
+} from "@chakra-ui/react";
+import { PhoneIcon, AddIcon, WarningIcon } from "@chakra-ui/icons";
 
 const Components: React.FC = () => {
-  const [theme, toggleTheme] = useTheme();
+  const bg = useColorModeValue("brand.100", "brand.900");
+  const text = useColorModeValue("brand.900", "brand.100");
 
   return (
     <div>
-      <nav
-        className="fixed bg-white h-[4.75rem] w-full border-b-[1px]
+      <Box
+        bg={bg}
+        className="fixed h-[4.75rem] w-full border-b-[1px]
         flex justify-between items-center px-4 color-nav color-divider z-10"
       >
-        <h1 className="text-2xl font-medium italic">Component Reference</h1>
-        <button onClick={toggleTheme} className="btn-theme">
-          {theme === "light" ? (
-            <SunIcon className="h-6 w-6" />
-          ) : (
-            <MoonIcon className="h-6 w-6" />
-          )}
-        </button>
-      </nav>
+        <Text className="text-2xl font-medium italic" color={text}>
+          Component Reference
+        </Text>
+        <ColorModeSwitcher />
+      </Box>
       <nav className="h-[4.75rem]"></nav>
-      <div className="container mx-auto px-4 max-w-6xl h-screen prose prose-lg">
-        <div>
-          <h2 className="font-medium my-4">Button</h2>
-          <div className="flex justify-center items-center space-x-8">
-            <Button className="btn-primary-outline">
-              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
-              Click Me
-            </Button>
-            <Button className="btn-primary-filled">
-              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
-              Click Me
-            </Button>
-            <Button className="btn-primary-inverted">
-              <MailIcon className="w-6 h-6 mr-2 mt-[2px]" />
-              Click Me
-            </Button>
-          </div>
-        </div>
+      <div className="container mx-auto mt-4 px-4 max-w-6xl h-screen">
+        <Button colorScheme="red" variant="outline" className="btn-ring">
+          Click Me
+        </Button>
+        <Button colorScheme="zinc" className="btn-ring" ml={4}>
+          Click Me
+        </Button>
+        <Button ml={4}>Click Me</Button>
+        <Divider my={4}></Divider>
+        <InputGroup size="lg" mb={4}>
+          <InputLeftElement color={"gray.400"} children={<PhoneIcon />} />
+          <Input
+            placeholder="Please enter..."
+            w={300}
+            colorScheme={"yellow"}
+            className="input-ring"
+          ></Input>
+        </InputGroup>
+        <InputGroup size="lg" mb={4}>
+          <InputLeftAddon color={"gray.400"} children={<WarningIcon />} />
+          <Input type="date" placeholder="Please enter..." w={300}></Input>
+        </InputGroup>
       </div>
     </div>
   );
