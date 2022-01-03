@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_PIPE } from '@nestjs/core';
+import { WsModule } from './ws/ws.module';
 const cookieSession = require('cookie-session');
 
 @Module({
@@ -21,6 +22,7 @@ const cookieSession = require('cookie-session');
       inject: [ConfigService],
     }),
     UsersModule,
+    WsModule,
   ],
   controllers: [AppController],
   providers: [

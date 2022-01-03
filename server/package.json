@@ -21,13 +21,16 @@
     "test:e2e": "cross-env NODE_ENV=test jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@hocuspocus/server": "^1.0.0-alpha.90",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.1.5",
     "@nestjs/core": "^8.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/mongoose": "^9.0.2",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/platform-ws": "^8.2.4",
     "@nestjs/swagger": "^5.1.5",
+    "@nestjs/websockets": "^8.2.4",
     "@types/cookie-session": "^2.0.44",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",

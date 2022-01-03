@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
@@ -6,6 +7,11 @@ async function bootstrap() {
   // Global validation pipe is moved to app.module
 
   const app = await NestFactory.create(AppModule);
+
+  //websocket specific socket adapter
+  //setGlobalPrefix does not work for websocket
+  app.useWebSocketAdapter(new WsAdapter(app));
+
   app.setGlobalPrefix('api');
   app.enableCors();
   const config = new DocumentBuilder()
