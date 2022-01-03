@@ -18,7 +18,7 @@ export class WsGateway implements OnGatewayConnection {
     const document = request.headers.document
       ? (request.headers.document as string)
       : '';
-    console.log(document);
+    console.log(request);
     this.server.handleConnection(client, request, document);
   }
 }
