@@ -11,7 +11,7 @@ import "./index.scss";
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <ColorModeScript />
+      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <ChakraProvider theme={theme}>
         <BrowserRouter>
           <App />

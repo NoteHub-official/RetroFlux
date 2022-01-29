@@ -1,10 +1,21 @@
 import React from "react";
+import { Box, Container } from "@chakra-ui/react";
+import { useColorModeValue } from "@chakra-ui/react";
+import { FluxEditor } from "../editor/FluxEditor";
+import { NavigationBar } from "../components/NavigationBar";
 
 const Home: React.FC = () => {
+  const bg = useColorModeValue("zinc.50", "whiteAlpha");
+
   return (
-    <div className="container mx-auto">
-      <div className="flex justify-center"></div>
-    </div>
+    <Box bg={bg} minh="100vh">
+      <NavigationBar />
+      <Container maxW="container.lg">
+        <Box>
+          <FluxEditor />
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
