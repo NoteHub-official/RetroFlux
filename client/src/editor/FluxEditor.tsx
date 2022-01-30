@@ -12,41 +12,33 @@ import {
   createUnderlinePlugin,
   createStrikethroughPlugin,
   createCodePlugin,
-  MARK_BOLD,
-  MARK_ITALIC,
-  MARK_UNDERLINE,
-  MARK_STRIKETHROUGH,
-  MARK_CODE,
-  ELEMENT_CODE_LINE,
-  ELEMENT_BLOCKQUOTE,
   createPlugins,
   createPlateUI,
-  createPlateEditor,
-  withPlate,
-  pipe,
-  usePlate,
   usePlateStore,
+  createPluginFactory,
+  HotkeyPlugin,
+  PlatePluginComponent,
+  usePlateEditorState,
+  getPluginType,
+  ELEMENT_DEFAULT,
 } from "@udecode/plate";
-import {
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
-  ELEMENT_CODE_BLOCK,
-  ELEMENT_PARAGRAPH,
-} from "@udecode/plate";
+import { initialEditorValue } from "./values";
 import { useColorModeValue } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
-import { createEditor } from "slate";
-import { withReact } from "slate-react";
+import debounce from "lodash/debounce";
+
+const ELEMENT_TAG = "tag";
 
 export const FluxEditor: React.FC = () => {
   const storeApi = usePlateStore();
+  const editor = usePlateEditorState();
 
-  const editor = useMemo(() => storeApi.store.getState().editor, [storeApi.store]);
-  const [value, setValue] = useState<TNode<AnyObject> | null>(null);
+  const initialValue: any = useMemo(() => {
+    const savedValue: any = localStorage.getItem("plate-value");
+    return initialEditorValue;
+  }, []);
+
+  const [value, setValue] = useState<TNode<AnyObject> | null>(initialValue);
   const borderColor = useColorModeValue("zinc.300", "whiteAlpha.300");
 
   // Stored in CONFIG.editableProps
@@ -57,65 +49,44 @@ export const FluxEditor: React.FC = () => {
     },
   };
 
-  const initialValue = [
-    createElement("🧱 Elements", { type: ELEMENT_H1 }),
-    createElement("🔥 Basic Elements", { type: ELEMENT_H2 }),
-    createElement("These are the most common elements, known as blocks:"),
-    createElement("Heading 1", { type: ELEMENT_H1 }),
-    createElement("Heading 2", { type: ELEMENT_H2 }),
-    createElement("Heading 3", { type: ELEMENT_H3 }),
-    createElement("Heading 4", { type: ELEMENT_H4 }),
-    createElement("Heading 5", { type: ELEMENT_H5 }),
-    createElement("Heading 6", { type: ELEMENT_H6 }),
-    createElement("Blockquote", { type: ELEMENT_BLOCKQUOTE }),
-    {
-      type: ELEMENT_CODE_BLOCK,
-      children: [
-        {
-          type: ELEMENT_CODE_LINE,
-          children: [
-            {
-              text: "const a = 'Hello';",
-            },
-          ],
-        },
-        {
-          type: ELEMENT_CODE_LINE,
-          children: [
-            {
-              text: "const b = 'World';",
-            },
-          ],
-        },
-      ],
+  const createOverridePlugin = createPluginFactory({
+    key: "yjs",
+    withOverrides: (editor, plugins) => {
+      // ...
+      return editor;
     },
-    createElement("💅 Marks", { type: ELEMENT_H1 }),
-    createElement("💧 Basic Marks", { type: ELEMENT_H2 }),
-    createElement(
-      "The basic marks consist of text formatting such as bold, italic, underline, strikethrough, subscript, superscript, and code."
-    ),
-    createElement("You can customize the type, the component and the hotkey for each of these."),
-    createElement("This text is bold.", { mark: MARK_BOLD }),
-    createElement("This text is italic.", { mark: MARK_ITALIC }),
-    createElement("This text is underlined.", {
-      mark: MARK_UNDERLINE,
-    }),
-    {
-      type: ELEMENT_PARAGRAPH,
-      children: [
-        {
-          text: "This text is bold, italic and underlined.",
-          [MARK_BOLD]: true,
-          [MARK_ITALIC]: true,
-          [MARK_UNDERLINE]: true,
-        },
-      ],
-    },
-    createElement("This is a strikethrough text.", {
-      mark: MARK_STRIKETHROUGH,
-    }),
-    createElement("This is an inline code.", { mark: MARK_CODE }),
-  ];
+  });
+
+  const TagComponent: PlatePluginComponent = (props) => {
+    const { attributes, children, nodeProps, element } = props;
+    console.log(nodeProps);
+    return (
+      <Box
+        as="span"
+        color="zinc.100"
+        fontWeight="bold"
+        bg="purple.500"
+        rounded="sm"
+        px={1}
+        fontSize="sm"
+        {...attributes}
+        _focus={{ boxShadow: "none", ring: 2 }}
+        contentEditable={false}
+      >
+        <span>#{nodeProps.tag}</span>
+        <span>{children}</span>
+      </Box>
+    );
+  };
+
+  const createTagPlugin = createPluginFactory({
+    key: ELEMENT_TAG,
+    isElement: true,
+    isInline: true,
+    isVoid: true,
+    props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
+    component: TagComponent,
+  });
 
   const plugins = createPlugins(
     [
@@ -124,13 +95,16 @@ export const FluxEditor: React.FC = () => {
       createBlockquotePlugin(), // blockquote element
       createCodeBlockPlugin(), // code block element
       createHeadingPlugin(), // heading elements
-
       // marks
       createBoldPlugin(), // bold mark
       createItalicPlugin(), // italic mark
       createUnderlinePlugin(), // underline mark
       createStrikethroughPlugin(), // strikethrough mark
       createCodePlugin(), // code mark
+      createOverridePlugin({
+        plugins: [createBlockquotePlugin()],
+      }),
+      createTagPlugin(),
     ],
     {
       // Plate components
@@ -138,37 +112,29 @@ export const FluxEditor: React.FC = () => {
     }
   );
 
+  const handleChange = useCallback((value) => {
+    const debounced = debounce(() => {
+      setValue(value);
+      localStorage.setItem("plate-value", JSON.stringify(value));
+    }, 1000);
+    debounced();
+  }, []);
+
   return (
     <React.Fragment>
       <Box borderWidth={1} borderColor={borderColor} w={"full"} rounded="md" px={4} py={3} mb={4}>
         <Plate
           id="1"
           editableProps={editableProps}
+          normalizeInitialValue
           initialValue={initialValue}
-          onChange={(value) => {
-            // @ts-ignore
-            setValue(value);
-          }}
+          onChange={(value) => handleChange(value)}
           plugins={plugins}
         />
       </Box>
-      <Box px={4} fontSize="sm">
+      <Box px={4} fontSize="xs" maxW="full" overflowX="auto">
         <pre>{JSON.stringify(value, null, 2)}</pre>
       </Box>
     </React.Fragment>
   );
-};
-
-// @ts-ignore
-const createElement = (text: string, { type = ELEMENT_PARAGRAPH, mark }: any = {}) => {
-  const leaf = { text };
-  if (mark) {
-    // @ts-ignore
-    leaf[mark] = true;
-  }
-
-  return {
-    type,
-    children: [leaf],
-  };
 };
