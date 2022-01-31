@@ -16,22 +16,29 @@ import {
   createPlateUI,
   usePlateStore,
   createPluginFactory,
-  HotkeyPlugin,
   PlatePluginComponent,
   usePlateEditorState,
-  getPluginType,
-  ELEMENT_DEFAULT,
+  HeadingToolbar,
 } from "@udecode/plate";
 import { initialEditorValue } from "./values";
 import { useColorModeValue } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import debounce from "lodash/debounce";
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { CursorEditor, withCursors, withYHistory, withYjs, YjsEditor } from "@slate-yjs/core";
+import randomColor from "randomcolor";
+import type { Descendant } from "slate";
+import { createEditor } from "slate";
+import { Editable, Slate, withReact } from "slate-react";
+import * as Y from "yjs";
+import { RemoteCursorOverlay } from "./Overlay";
+import { CursorData } from "./Overlay";
 
 const ELEMENT_TAG = "tag";
 
 export const FluxEditor: React.FC = () => {
   const storeApi = usePlateStore();
-  const editor = usePlateEditorState();
+  const editor = usePlateEditorState("flux-editor");
 
   const initialValue: any = useMemo(() => {
     const savedValue: any = localStorage.getItem("plate-value");
@@ -40,6 +47,16 @@ export const FluxEditor: React.FC = () => {
 
   const [value, setValue] = useState<TNode<AnyObject> | null>(initialValue);
   const borderColor = useColorModeValue("zinc.300", "whiteAlpha.300");
+
+  const provider = useMemo(
+    () =>
+      new HocuspocusProvider({
+        url: "ws://127.0.0.1:1234",
+        parameters: { key: "" },
+        name: "slate-yjs-demo",
+      }),
+    []
+  );
 
   // Stored in CONFIG.editableProps
   const editableProps = {
@@ -52,16 +69,30 @@ export const FluxEditor: React.FC = () => {
   const createOverridePlugin = createPluginFactory({
     key: "yjs",
     withOverrides: (editor, plugins) => {
-      // ...
-      return editor;
+      const cursorData: CursorData = {
+        color: randomColor({
+          luminosity: "dark",
+          alpha: 1,
+          format: "hex",
+        }),
+        name: "Brian Yin",
+      };
+      const sharedType = provider.document.get("content", Y.XmlText) as Y.XmlText;
+
+      return withYHistory(
+        withCursors(withYjs(editor, sharedType), provider.awareness, {
+          data: cursorData,
+        })
+      );
     },
   });
 
   const TagComponent: PlatePluginComponent = (props) => {
     const { attributes, children, nodeProps, element } = props;
-    console.log(nodeProps);
+
     return (
       <Box
+        cursor={"pointer"}
         as="span"
         color="zinc.100"
         fontWeight="bold"
@@ -84,6 +115,7 @@ export const FluxEditor: React.FC = () => {
     isElement: true,
     isInline: true,
     isVoid: true,
+    isLeaf: true,
     props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
     component: TagComponent,
   });
@@ -101,9 +133,7 @@ export const FluxEditor: React.FC = () => {
       createUnderlinePlugin(), // underline mark
       createStrikethroughPlugin(), // strikethrough mark
       createCodePlugin(), // code mark
-      createOverridePlugin({
-        plugins: [createBlockquotePlugin()],
-      }),
+      createOverridePlugin(),
       createTagPlugin(),
     ],
     {
@@ -115,21 +145,29 @@ export const FluxEditor: React.FC = () => {
   const handleChange = useCallback((value) => {
     const debounced = debounce(() => {
       setValue(value);
-      localStorage.setItem("plate-value", JSON.stringify(value));
+      //   localStorage.setItem("plate-value", JSON.stringify(value));
     }, 1000);
     debounced();
   }, []);
 
+  // @ts-ignore
+  console.log(CursorEditor.cursorStates(editor));
+
   return (
     <React.Fragment>
       <Box borderWidth={1} borderColor={borderColor} w={"full"} rounded="md" px={4} py={3} mb={4}>
+        <HeadingToolbar></HeadingToolbar>
+
         <Plate
           id="1"
-          editableProps={editableProps}
+          editableProps={{ ...editableProps, spellCheck: false }}
           normalizeInitialValue
           initialValue={initialValue}
           onChange={(value) => handleChange(value)}
           plugins={plugins}
+          renderEditable={(editable) => {
+            return <RemoteCursorOverlay>{editable}</RemoteCursorOverlay>;
+          }}
         />
       </Box>
       <Box px={4} fontSize="xs" maxW="full" overflowX="auto">
