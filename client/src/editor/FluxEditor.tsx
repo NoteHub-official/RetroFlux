@@ -1,25 +1,64 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Plate,
   TNode,
   AnyObject,
-  createParagraphPlugin,
-  createBlockquotePlugin,
-  createCodeBlockPlugin,
-  createHeadingPlugin,
-  createBoldPlugin,
-  createItalicPlugin,
-  createUnderlinePlugin,
-  createStrikethroughPlugin,
-  createCodePlugin,
-  createPlugins,
-  createPlateUI,
   usePlateStore,
   createPluginFactory,
   PlatePluginComponent,
   usePlateEditorState,
+  createPlateUI,
   HeadingToolbar,
+  MentionCombobox,
+  Plate,
+  createAlignPlugin,
+  createAutoformatPlugin,
+  createBlockquotePlugin,
+  createBoldPlugin,
+  createCodeBlockPlugin,
+  createCodePlugin,
+  createExitBreakPlugin,
+  createHeadingPlugin,
+  createHighlightPlugin,
+  createKbdPlugin,
+  createImagePlugin,
+  createItalicPlugin,
+  createLinkPlugin,
+  createListPlugin,
+  createMediaEmbedPlugin,
+  createNodeIdPlugin,
+  createParagraphPlugin,
+  createResetNodePlugin,
+  createSelectOnBackspacePlugin,
+  createSoftBreakPlugin,
+  createDndPlugin,
+  createStrikethroughPlugin,
+  createSubscriptPlugin,
+  createSuperscriptPlugin,
+  createTablePlugin,
+  createTodoListPlugin,
+  createTrailingBlockPlugin,
+  createUnderlinePlugin,
+  createComboboxPlugin,
+  createMentionPlugin,
+  createIndentPlugin,
+  createFontColorPlugin,
+  createFontBackgroundColorPlugin,
+  createDeserializeMdPlugin,
+  createDeserializeCsvPlugin,
+  createNormalizeTypesPlugin,
+  createFontSizePlugin,
+  createHorizontalRulePlugin,
+  createPlugins,
+  createDeserializeDocxPlugin,
+  createJuicePlugin,
 } from "@udecode/plate";
+import {
+  createExcalidrawPlugin,
+  ELEMENT_EXCALIDRAW,
+  ExcalidrawElement,
+} from "@udecode/plate-ui-excalidraw";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { initialEditorValue } from "./values";
 import { useColorModeValue } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
@@ -35,6 +74,13 @@ import { RemoteCursorOverlay } from "./Overlay";
 import { CursorData } from "./Overlay";
 
 const ELEMENT_TAG = "tag";
+
+let components = createPlateUI({
+  [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
+  // customize your components by plugin key
+});
+components = withStyledPlaceHolders(components);
+components = withStyledDraggables(components);
 
 export const FluxEditor: React.FC = () => {
   const storeApi = usePlateStore();
