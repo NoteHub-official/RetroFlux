@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   TNode,
@@ -51,6 +52,8 @@ import {
   createPlugins,
   createDeserializeDocxPlugin,
   createJuicePlugin,
+  withPlate,
+  createPlateEditor,
 } from "@udecode/plate";
 import {
   createExcalidrawPlugin,
@@ -75,17 +78,7 @@ import { CursorData } from "./Overlay";
 
 const ELEMENT_TAG = "tag";
 
-let components = createPlateUI({
-  [ELEMENT_EXCALIDRAW]: ExcalidrawElement,
-  // customize your components by plugin key
-});
-components = withStyledPlaceHolders(components);
-components = withStyledDraggables(components);
-
 export const FluxEditor: React.FC = () => {
-  const storeApi = usePlateStore();
-  const editor = usePlateEditorState("flux-editor");
-
   const initialValue: any = useMemo(() => {
     const savedValue: any = localStorage.getItem("plate-value");
     return initialEditorValue;
@@ -112,60 +105,6 @@ export const FluxEditor: React.FC = () => {
     },
   };
 
-  const createOverridePlugin = createPluginFactory({
-    key: "yjs",
-    withOverrides: (editor, plugins) => {
-      const cursorData: CursorData = {
-        color: randomColor({
-          luminosity: "dark",
-          alpha: 1,
-          format: "hex",
-        }),
-        name: "Brian Yin",
-      };
-      const sharedType = provider.document.get("content", Y.XmlText) as Y.XmlText;
-
-      return withYHistory(
-        withCursors(withYjs(editor, sharedType), provider.awareness, {
-          data: cursorData,
-        })
-      );
-    },
-  });
-
-  const TagComponent: PlatePluginComponent = (props) => {
-    const { attributes, children, nodeProps, element } = props;
-
-    return (
-      <Box
-        cursor={"pointer"}
-        as="span"
-        color="zinc.100"
-        fontWeight="bold"
-        bg="purple.500"
-        rounded="sm"
-        px={1}
-        fontSize="sm"
-        {...attributes}
-        _focus={{ boxShadow: "none", ring: 2 }}
-        contentEditable={false}
-      >
-        <span>#{nodeProps.tag}</span>
-        <span>{children}</span>
-      </Box>
-    );
-  };
-
-  const createTagPlugin = createPluginFactory({
-    key: ELEMENT_TAG,
-    isElement: true,
-    isInline: true,
-    isVoid: true,
-    isLeaf: true,
-    props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
-    component: TagComponent,
-  });
-
   const plugins = createPlugins(
     [
       // elements
@@ -179,14 +118,43 @@ export const FluxEditor: React.FC = () => {
       createUnderlinePlugin(), // underline mark
       createStrikethroughPlugin(), // strikethrough mark
       createCodePlugin(), // code mark
-      createOverridePlugin(),
-      createTagPlugin(),
     ],
     {
       // Plate components
       components: createPlateUI(),
     }
   );
+
+  // Setup the binding
+  const editor = useMemo(() => {
+    const cursorData: CursorData = {
+      color: randomColor({
+        luminosity: "dark",
+        alpha: 1,
+        format: "hex",
+      }),
+      name: "Brian",
+    };
+
+    const sharedType = provider.document.get("content", Y.XmlText) as Y.XmlText;
+
+    return withReact(
+      withYHistory(
+        withCursors(
+          withYjs(
+            createPlateEditor({
+              plugins,
+            }),
+            sharedType
+          ),
+          provider.awareness,
+          {
+            data: cursorData,
+          }
+        )
+      )
+    );
+  }, [provider.awareness, provider.document]);
 
   const handleChange = useCallback((value) => {
     const debounced = debounce(() => {
@@ -195,6 +163,10 @@ export const FluxEditor: React.FC = () => {
     }, 1000);
     debounced();
   }, []);
+
+  // Disconnect YjsEditor on unmount in order to free up resources
+  useEffect(() => () => YjsEditor.disconnect(editor), [editor]);
+  useEffect(() => () => provider.disconnect(), [provider]);
 
   // @ts-ignore
   console.log(CursorEditor.cursorStates(editor));
@@ -205,12 +177,12 @@ export const FluxEditor: React.FC = () => {
         <HeadingToolbar></HeadingToolbar>
 
         <Plate
-          id="1"
+          id="main"
+          editor={editor}
           editableProps={{ ...editableProps, spellCheck: false }}
           normalizeInitialValue
           initialValue={initialValue}
           onChange={(value) => handleChange(value)}
-          plugins={plugins}
           renderEditable={(editable) => {
             return <RemoteCursorOverlay>{editable}</RemoteCursorOverlay>;
           }}
@@ -222,3 +194,36 @@ export const FluxEditor: React.FC = () => {
     </React.Fragment>
   );
 };
+
+// const TagComponent: PlatePluginComponent = (props) => {
+//   const { attributes, children, nodeProps, element } = props;
+
+//   return (
+//     <Box
+//       cursor={"pointer"}
+//       as="span"
+//       color="zinc.100"
+//       fontWeight="bold"
+//       bg="purple.500"
+//       rounded="sm"
+//       px={1}
+//       fontSize="sm"
+//       {...attributes}
+//       _focus={{ boxShadow: "none", ring: 2 }}
+//       contentEditable={false}
+//     >
+//       <span>#{nodeProps.tag}</span>
+//       <span>{children}</span>
+//     </Box>
+//   );
+// };
+
+// const createTagPlugin = createPluginFactory({
+//   key: ELEMENT_TAG,
+//   isElement: true,
+//   isInline: true,
+//   isVoid: true,
+//   isLeaf: true,
+//   props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
+//   component: TagComponent,
+// });
