@@ -193,36 +193,3 @@ export const FluxEditor: React.FC = () => {
     </React.Fragment>
   );
 };
-
-// const TagComponent: PlatePluginComponent = (props) => {
-//   const { attributes, children, nodeProps, element } = props;
-
-//   return (
-//     <Box
-//       cursor={"pointer"}
-//       as="span"
-//       color="zinc.100"
-//       fontWeight="bold"
-//       bg="purple.500"
-//       rounded="sm"
-//       px={1}
-//       fontSize="sm"
-//       {...attributes}
-//       _focus={{ boxShadow: "none", ring: 2 }}
-//       contentEditable={false}
-//     >
-//       <span>#{nodeProps.tag}</span>
-//       <span>{children}</span>
-//     </Box>
-//   );
-// };
-
-// const createTagPlugin = createPluginFactory({
-//   key: ELEMENT_TAG,
-//   isElement: true,
-//   isInline: true,
-//   isVoid: true,
-//   isLeaf: true,
-//   props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
-//   component: TagComponent,
-// });

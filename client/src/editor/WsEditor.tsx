@@ -201,6 +201,7 @@ export const WsEditor: React.FC = () => {
           const insertDelta = slateNodesToInsertDelta(initialValue);
           sharedTypeContent.applyDelta(insertDelta);
         }
+        console.log(sharedTypeContent);
       }
     });
 
