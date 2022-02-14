@@ -67,35 +67,30 @@ import { useColorModeValue } from "@chakra-ui/react";
 import { Box } from "@chakra-ui/react";
 import debounce from "lodash/debounce";
 import { HocuspocusProvider } from "@hocuspocus/provider";
-import { CursorEditor, withCursors, withYHistory, withYjs, YjsEditor } from "@slate-yjs/core";
+import {
+  CursorEditor,
+  withCursors,
+  withYHistory,
+  withYjs,
+  YjsEditor,
+  slateNodesToInsertDelta,
+} from "@slate-yjs/core";
 import randomColor from "randomcolor";
 import type { Descendant } from "slate";
 import { createEditor } from "slate";
 import { Editable, Slate, withReact } from "slate-react";
 import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
 import { RemoteCursorOverlay } from "./Overlay";
 import { CursorData } from "./Overlay";
 
-const WEBSOCKET_ENDPOINT = "ws://127.0.0.1:1234";
+const WEBSOCKET_ENDPOINT = "ws://localhost:1234";
 
-export const FluxEditor: React.FC = () => {
+export const WsEditor: React.FC = () => {
   const initialValue: any = useMemo(() => {
     const savedValue: any = localStorage.getItem("plate-value");
     return initialEditorValue;
   }, []);
-
-  const [value, setValue] = useState<Descendant[]>(initialValue);
-  const borderColor = useColorModeValue("zinc.300", "whiteAlpha.300");
-
-  const provider = useMemo(
-    () =>
-      new HocuspocusProvider({
-        url: WEBSOCKET_ENDPOINT,
-        parameters: { key: "" },
-        name: "slate-yjs-demo",
-      }),
-    []
-  );
 
   // Stored in CONFIG.editableProps
   const editableProps = {
@@ -104,6 +99,31 @@ export const FluxEditor: React.FC = () => {
       padding: "15px",
     },
   };
+
+  const name = "Brian";
+  const color = useMemo(
+    () =>
+      randomColor({
+        luminosity: "dark",
+        format: "rgba",
+        alpha: 1,
+      }),
+    []
+  );
+
+  const [value, setValue] = useState<Descendant[]>(initialValue);
+  const borderColor = useColorModeValue("zinc.300", "whiteAlpha.300");
+
+  // Create the Yjs doc and fetch if it's available from the server
+  const [sharedTypeContent, provider] = useMemo(() => {
+    const doc = new Y.Doc();
+    const sharedTypeContent = doc.get("content", Y.XmlText) as Y.XmlText;
+    const provider = new WebsocketProvider(WEBSOCKET_ENDPOINT, "slug123", doc, {
+      connect: false,
+    });
+
+    return [sharedTypeContent, provider];
+  }, []);
 
   const plugins = createPlugins(
     [
@@ -128,15 +148,9 @@ export const FluxEditor: React.FC = () => {
   // Setup the binding
   const editor = useMemo(() => {
     const cursorData: CursorData = {
-      color: randomColor({
-        luminosity: "dark",
-        alpha: 1,
-        format: "hex",
-      }),
-      name: "Brian",
+      color: color,
+      name: name,
     };
-
-    const sharedType = provider.document.get("content", Y.XmlText) as Y.XmlText;
 
     return withReact(
       withYHistory(
@@ -144,8 +158,11 @@ export const FluxEditor: React.FC = () => {
           withYjs(
             createPlateEditor({
               plugins,
+              disableCorePlugins: {
+                history: true,
+              },
             }),
-            sharedType
+            sharedTypeContent
           ),
           provider.awareness,
           {
@@ -154,7 +171,7 @@ export const FluxEditor: React.FC = () => {
         )
       )
     );
-  }, [provider.awareness, provider.document]);
+  }, [provider.awareness, sharedTypeContent]);
 
   const handleChange = useCallback((value) => {
     const debounced = debounce(() => {
@@ -165,8 +182,34 @@ export const FluxEditor: React.FC = () => {
   }, []);
 
   // Disconnect YjsEditor on unmount in order to free up resources
+  // Disconnect the binding on component unmount in order to free up resources
   useEffect(() => () => YjsEditor.disconnect(editor), [editor]);
-  useEffect(() => () => provider.disconnect(), [provider]);
+  useEffect(() => {
+    /*provider.on("status", ({ status }: { status: string }) => {
+      setOnlineState(status === "connected");
+    });*/
+
+    provider.awareness.setLocalState({
+      alphaColor: color.slice(0, -2) + "0.2)",
+      color,
+      name,
+    });
+
+    provider.on("sync", (isSynced: boolean) => {
+      if (isSynced) {
+        if (sharedTypeContent.length === 0) {
+          const insertDelta = slateNodesToInsertDelta(initialValue);
+          sharedTypeContent.applyDelta(insertDelta);
+        }
+      }
+    });
+
+    provider.connect();
+
+    return () => {
+      provider.disconnect();
+    };
+  }, [color, sharedTypeContent, provider]);
 
   // @ts-ignore
   console.log(CursorEditor.cursorStates(editor));
@@ -180,6 +223,7 @@ export const FluxEditor: React.FC = () => {
           id="main"
           editor={editor}
           editableProps={{ ...editableProps, spellCheck: false }}
+          normalizeInitialValue
           initialValue={initialValue}
           onChange={setValue}
           renderEditable={(editable) => {
@@ -193,36 +237,3 @@ export const FluxEditor: React.FC = () => {
     </React.Fragment>
   );
 };
-
-// const TagComponent: PlatePluginComponent = (props) => {
-//   const { attributes, children, nodeProps, element } = props;
-
-//   return (
-//     <Box
-//       cursor={"pointer"}
-//       as="span"
-//       color="zinc.100"
-//       fontWeight="bold"
-//       bg="purple.500"
-//       rounded="sm"
-//       px={1}
-//       fontSize="sm"
-//       {...attributes}
-//       _focus={{ boxShadow: "none", ring: 2 }}
-//       contentEditable={false}
-//     >
-//       <span>#{nodeProps.tag}</span>
-//       <span>{children}</span>
-//     </Box>
-//   );
-// };
-
-// const createTagPlugin = createPluginFactory({
-//   key: ELEMENT_TAG,
-//   isElement: true,
-//   isInline: true,
-//   isVoid: true,
-//   isLeaf: true,
-//   props: ({ element }) => ({ nodeProps: { tag: element?.tag } }),
-//   component: TagComponent,
-// });

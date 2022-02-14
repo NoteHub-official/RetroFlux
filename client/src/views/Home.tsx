@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Container } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/react";
 import { FluxEditor } from "../editor/FluxEditor";
+import { WsEditor } from "../editor/WsEditor";
 import { NavigationBar } from "../components/NavigationBar";
 
 const Home: React.FC = () => {
