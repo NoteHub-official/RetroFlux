@@ -84,6 +84,59 @@ export const FluxEditor: React.FC = () => {
     return initialEditorValue;
   }, []);
 
+  const plugins = createPlugins(
+    [
+      // elements
+      createParagraphPlugin(), // paragraph element
+      createBlockquotePlugin(), // blockquote element
+      createCodeBlockPlugin(), // code block element
+      createHeadingPlugin(), // heading elements
+      // marks
+      createBoldPlugin(), // bold mark
+      createItalicPlugin(), // italic mark
+      createUnderlinePlugin(), // underline mark
+      createStrikethroughPlugin(), // strikethrough mark
+      createCodePlugin(), // code mark
+      // ...
+      createTodoListPlugin(),
+      createImagePlugin(),
+      createHorizontalRulePlugin(),
+      createLinkPlugin(),
+      createListPlugin(),
+      createTablePlugin(),
+      createMediaEmbedPlugin(),
+      createExcalidrawPlugin(),
+      createHighlightPlugin(),
+      createSubscriptPlugin(),
+      createSuperscriptPlugin(),
+      createFontColorPlugin(),
+      createFontBackgroundColorPlugin(),
+      createFontSizePlugin(),
+      createKbdPlugin(),
+      createNodeIdPlugin(),
+      createDndPlugin(),
+      // createAlignPlugin(CONFIG.align),
+      // createIndentPlugin(CONFIG.indent),
+      // createAutoformatPlugin(CONFIG.autoformat),
+      // createResetNodePlugin(CONFIG.resetBlockType),
+      // createSoftBreakPlugin(CONFIG.softBreak),
+      // createExitBreakPlugin(CONFIG.exitBreak),
+      // createNormalizeTypesPlugin(CONFIG.forceLayout),
+      // createTrailingBlockPlugin(CONFIG.trailingBlock),
+      // createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
+      createComboboxPlugin(),
+      createMentionPlugin(),
+      createDeserializeMdPlugin(),
+      createDeserializeCsvPlugin(),
+      createDeserializeDocxPlugin(),
+      createJuicePlugin(),
+    ],
+    {
+      // Plate components
+      components: createPlateUI(),
+    }
+  );
+
   const [value, setValue] = useState<Descendant[]>(initialValue);
   const borderColor = useColorModeValue("zinc.300", "whiteAlpha.300");
 
@@ -104,26 +157,6 @@ export const FluxEditor: React.FC = () => {
       padding: "15px",
     },
   };
-
-  const plugins = createPlugins(
-    [
-      // elements
-      createParagraphPlugin(), // paragraph element
-      createBlockquotePlugin(), // blockquote element
-      createCodeBlockPlugin(), // code block element
-      createHeadingPlugin(), // heading elements
-      // marks
-      createBoldPlugin(), // bold mark
-      createItalicPlugin(), // italic mark
-      createUnderlinePlugin(), // underline mark
-      createStrikethroughPlugin(), // strikethrough mark
-      createCodePlugin(), // code mark
-    ],
-    {
-      // Plate components
-      components: createPlateUI(),
-    }
-  );
 
   // Setup the binding
   const editor = useMemo(() => {
@@ -168,24 +201,26 @@ export const FluxEditor: React.FC = () => {
   useEffect(() => () => YjsEditor.disconnect(editor), [editor]);
   useEffect(() => () => provider.disconnect(), [provider]);
 
-  // @ts-ignore
-  console.log(CursorEditor.cursorStates(editor));
+  // console.log(CursorEditor.cursorStates(editor));
+  console.log("asdasd");
 
   return (
     <React.Fragment>
       <Box borderWidth={1} borderColor={borderColor} w={"full"} rounded="md" px={4} py={3} mb={4}>
         <HeadingToolbar></HeadingToolbar>
-
-        <Plate
-          id="main"
-          editor={editor}
-          editableProps={{ ...editableProps, spellCheck: false }}
-          initialValue={initialValue}
-          onChange={setValue}
-          renderEditable={(editable) => {
-            return <RemoteCursorOverlay>{editable}</RemoteCursorOverlay>;
-          }}
-        />
+        <DndProvider backend={HTML5Backend}>
+          <Plate
+            id="main"
+            editor={editor}
+            editableProps={{ ...editableProps, spellCheck: false }}
+            initialValue={initialValue}
+            normalizeInitialValue
+            // onChange={(value) => handleChange(value)}
+            renderEditable={(editable) => {
+              return <RemoteCursorOverlay>{editable}</RemoteCursorOverlay>;
+            }}
+          />
+        </DndProvider>
       </Box>
       <Box px={4} fontSize="xs" maxW="full" overflowX="auto">
         <pre>{JSON.stringify(value, null, 2)}</pre>

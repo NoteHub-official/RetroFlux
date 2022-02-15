@@ -81,7 +81,7 @@ export function RemoteCursorOverlay({ className, children }: RemoteCursorsProps)
   const { cursors } = useRemoteCursorOverlayPositions<CursorData>({
     containerRef,
   });
-  console.log(cursors);
+
   return (
     <div className={clsx("relative", className)} ref={containerRef}>
       {children}
