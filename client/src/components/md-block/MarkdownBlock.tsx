@@ -1,18 +1,19 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Textarea, useColorModeValue, Code } from "@chakra-ui/react";
+// plugins
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeMathjax from "rehype-mathjax";
+import rehypeKatex from "rehype-katex";
+import cx from "classnames";
 
 export interface MarkdownBlockProps {}
 
-const markdown = `Just a link: https://reactjs.com.- Adopting a linear + sigmoid model is equivalent to assuming ***linear log odds***.
-
+const markdown = `$$
+f(x) = \\frac{1}{2} \\rightarrow, \\ x \\in \\{0,1\\}^* = L
 $$
-log \frac{P(y=1|x)}{P(y=-1|x)}=w^Tx+b
-$$
-
-- This happens when $P(x|y=1)$  and $P(x|y=-1)$ are Gaussians with different means and the same covariance matrices ($w$ is related to the difference between the means)
-- Maximum (conditional) likekihood estimate: find $w$ that minimizes`;
+sadadasdasdasd$asdassssasd$asdasdasd \\frac{}{}sadasd`;
 
 export const MarkdownBlock: React.FC<MarkdownBlockProps> = (props) => {
   const [markdownText, setMarkdownText] = React.useState(markdown);
@@ -22,26 +23,36 @@ export const MarkdownBlock: React.FC<MarkdownBlockProps> = (props) => {
   };
 
   return (
-    <div className="md-block min-w-full">
-      <Textarea value={markdownText} onChange={handleChange} />
+    <div className="md-block min-w-full prose">
+      <Textarea value={markdownText} onChange={handleChange} height="xs" />
       <ReactMarkdown
         children={markdownText}
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
         components={{
-          // @ts-ignore
-          a: (props) => <a {...props} target="_blank" rel="noopener noreferrer" />,
-          h1: (props) => <h1 {...props} className="text-2xl font-bold" />,
-          h2: (props) => <h2 {...props} className="text-xl font-bold" />,
-          h3: (props) => <h3 {...props} className="text-lg font-bold" />,
-          h4: (props) => <h4 {...props} className="text-base font-bold" />,
-          h5: (props) => <h5 {...props} className="text-base font-bold" />,
-          h6: (props) => <h6 {...props} className="text-base font-bold" />,
-          p: (props) => <p {...props} className="text-base" />,
-          li: (props) => <li {...props} className="text-base" />,
-          strong: (props) => <strong {...props} className="font-bold" />,
-          em: (props) => <em {...props} className="italic" />,
-          blockquote: (props) => <blockquote {...props} className="blockquote" />,
           code: (props) => <CodeElement {...props} />,
+          // @ts-ignore
+          div: (props) => {
+            const { children, node, className } = props;
+            const margin = className?.split(" ").includes("math-display");
+            return <div className={cx(className, { "flex justify-center": margin })}>{children}</div>;
+          },
+          // span: (props) => {
+          //   const { children, node, className } = props;
+          //   const margin = className?.split(" ").includes("math-inline");
+
+          //   return <span className={cx(className, { "mx-1": margin }, "text-base")}>{children}</span>;
+          // },
+          // p: (props) => {
+          //   const { children, node, className } = props;
+
+          //   return <p className={cx(className, "flex items-center")}>{children}</p>;
+          // },
+          // li: (props) => {
+          //   const { children, node, className } = props;
+
+          //   return <li className={cx(className, "flex items-center")}>{children}</li>;
+          // },
         }}
       />
     </div>
@@ -49,7 +60,7 @@ export const MarkdownBlock: React.FC<MarkdownBlockProps> = (props) => {
 };
 
 const CodeElement = (props: any) => {
-  const color = useColorModeValue("blue-400", "red-400");
+  const color = useColorModeValue("blue.400", "red.400");
 
   return <Code {...props} className="bg-gray-200 p-1 rounded-md" color={color} />;
 };

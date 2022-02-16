@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useColorMode } from "@chakra-ui/react";
+import { useState, useEffect, useMemo } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
-const storageKey = "notehub-theme";
-const initialTheme: Theme = localStorage.getItem(storageKey) ? "dark" : "light";
 const root = document.getElementById("root");
 
 /**
@@ -12,10 +11,11 @@ const root = document.getElementById("root");
  * @returns [theme: Theme, toggleTheme: () => void]
  */
 const useTheme = () => {
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const { colorMode, toggleColorMode } = useColorMode();
+  const [theme, setTheme] = useState<Theme>(colorMode);
 
   useEffect(() => {
-    if (initialTheme === "dark" && root && !root.classList.contains("dark")) {
+    if (colorMode === "dark" && root && !root.classList.contains("dark")) {
       root.classList.add("dark");
     }
   }, []);
@@ -26,13 +26,12 @@ const useTheme = () => {
     if (root) {
       if (currentTheme === "dark") {
         root.classList.remove("dark");
-        localStorage.removeItem(storageKey);
       } else {
         root.classList.add("dark");
-        localStorage.setItem(storageKey, "dark");
       }
     }
     setTheme(theme === "light" ? "dark" : "light");
+    toggleColorMode();
   };
 
   return [theme, toggleTheme] as const;
