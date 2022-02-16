@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Textarea, useColorModeValue, Code } from "@chakra-ui/react";
 // plugins
@@ -7,6 +7,9 @@ import remarkMath from "remark-math";
 import rehypeMathjax from "rehype-mathjax";
 import rehypeKatex from "rehype-katex";
 import cx from "classnames";
+import * as Y from "yjs";
+import { WebrtcProvider } from "y-webrtc";
+import { IndexeddbPersistence } from "y-indexeddb";
 
 export interface MarkdownBlockProps {}
 
@@ -15,12 +18,32 @@ f(x) = \\frac{1}{2} \\rightarrow, \\ x \\in \\{0,1\\}^* = L
 $$
 sadadasdasdasd$asdassssasd$asdasdasd \\frac{}{}sadasd`;
 
+const ydoc = new Y.Doc();
+const yText = ydoc.getText("md-text");
+const provider = new WebrtcProvider("md-room", ydoc);
+const persistence = new IndexeddbPersistence("md-room", ydoc);
+
 export const MarkdownBlock: React.FC<MarkdownBlockProps> = (props) => {
-  const [markdownText, setMarkdownText] = React.useState(markdown);
+  const [markdownText, setMarkdownText] = React.useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMarkdownText(e.target.value);
+    const newValue = e.target.value;
+
+    Y.transact(ydoc, () => {
+      yText.delete(0, yText.length);
+      yText.insert(0, newValue);
+    });
   };
+
+  useEffect(() => {
+    yText.observe(() => {
+      setMarkdownText(yText.toString());
+    });
+  }, []);
+
+  useEffect(() => {
+    persistence.once("synced", () => {});
+  }, []);
 
   return (
     <div className="md-block min-w-full prose">
