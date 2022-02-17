@@ -11,7 +11,6 @@ import * as Y from "yjs";
 import { WebrtcProvider } from "y-webrtc";
 import { IndexeddbPersistence } from "y-indexeddb";
 import { MDXProvider } from "@mdx-js/react";
-import { compile } from "@mdx-js/mdx";
 import { visit } from "unist-util-visit";
 
 function myRemarkPlugin() {
