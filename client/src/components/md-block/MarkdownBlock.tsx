@@ -13,19 +13,18 @@ import { IndexeddbPersistence } from "y-indexeddb";
 
 export interface MarkdownBlockProps {}
 
-const markdown = `$$
-f(x) = \\frac{1}{2} \\rightarrow, \\ x \\in \\{0,1\\}^* = L
-$$
-sadadasdasdasd$asdassssasd$asdasdasd \\frac{}{}sadasd`;
-
 const ydoc = new Y.Doc();
-const yText = ydoc.getText("md-text");
 const provider = new WebrtcProvider("md-room", ydoc);
 const persistence = new IndexeddbPersistence("md-room", ydoc);
 
 export const MarkdownBlock: React.FC<MarkdownBlockProps> = (props) => {
+  const yText = useMemo(() => {
+    return ydoc.getText("md-text");
+  }, []);
+
   const [markdownText, setMarkdownText] = React.useState<string>("");
 
+  // try open another browser and see if typing can be shared!
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
 
