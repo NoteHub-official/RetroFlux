@@ -86,7 +86,8 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
 
   useEffect(() => {
     yMap.observe(() => {
-      // update react state only when remote user changes yjs editable state
+      console.log("yMap changed");
+      // update react state only when yjs has updated
       if (yMap.get("editable") !== editable.current) {
         handleEditableSwitch();
       }
@@ -137,6 +138,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
       });
     }
   };
+  console.log("render");
 
   return (
     <div className="md-block min-w-full prose">
@@ -158,3 +160,67 @@ const CustomImage: React.FC = ({ children }) => {
     <img className="react-image" src={node.attrs.src} alt={node.attrs.alt} title={node.attrs.title} />
   );
 };
+
+// useEffect(() => {
+//   yMap.observe(() => {
+//     console.log(yMap.get("editable"), editableState);
+//     // update react state only when remote user changes yjs editable state
+//     if (yMap.get("editable") !== editableState) {
+//       setEditableState(yMap.get("editable") as boolean);
+//     }
+//   });
+// }, [editableState]);
+
+// useEffect(() => {
+//   console.log("editableState changed");
+//   if (editorRef.current !== null) {
+//     editable.current = editableState;
+//     const editor = editorRef.current?.get();
+
+//     editor?.action((ctx) => {
+//       const view = ctx.get(editorViewCtx);
+//       view.updateState(view.state);
+//     });
+//   }
+//   yMap.set("editable", editableState);
+// }, [editableState]);
+
+// const handlePrint = () => {
+//   if (editorRef.current !== null) {
+//     const editor = editorRef.current?.get();
+
+//     const editorMarkdown = editor?.action((ctx) => {
+//       const editorView = ctx.get(editorViewCtx);
+//       const serializer = ctx.get(serializerCtx);
+//       return serializer(editorView.state.doc);
+//     });
+
+//     setMarkdownText(editorMarkdown || "");
+//   }
+// };
+
+// const toggleItalic = () => {
+//   if (editorRef.current !== null) {
+//     editable.current = !editable.current;
+//     const editor = editorRef.current?.get();
+
+//     editor?.action((ctx) => {
+//       // get command manager
+//       const commandManager = ctx.get(commandsCtx);
+//       // call command
+//       commandManager.call(ToggleItalic);
+//     });
+//   }
+// };
+
+// return (
+//   <div className="md-block min-w-full prose">
+//     <Button onClick={() => setEditableState(!editableState)}>
+//       {editableState ? "Preview" : "Edit"}
+//     </Button>
+//     <Button onClick={handlePrint}>Print</Button>
+//     <Button onClick={toggleItalic}>Italic</Button>
+//     <ReactEditor editor={editor} ref={editorRef} />
+//     <pre>{markdownText}</pre>
+//   </div>
+// );
