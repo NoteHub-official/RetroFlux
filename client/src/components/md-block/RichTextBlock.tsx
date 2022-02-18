@@ -21,7 +21,7 @@ import { WebrtcProvider } from "y-webrtc";
 // plugins
 import cx from "classnames";
 import * as Y from "yjs";
-import { YMap } from "yjs/dist/src/internals";
+import { IFramePlugin } from "./iframePlugin";
 
 export interface RichTextBlockProps {}
 
@@ -46,6 +46,7 @@ const options = [
 const rndInt = Math.floor(Math.random() * 4) + 1;
 
 const ydoc = new Y.Doc();
+// const ydoc = doc.getSubdocs();
 const yMap = ydoc.getMap("editor-states");
 yMap.set("editable", true);
 
@@ -74,6 +75,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
         ctx.set(editorViewOptionsCtx, { editable: () => editable.current });
       })
       .use(nord)
+      .use(IFramePlugin)
       .use(commonmark)
       .use(listener)
       .use(
