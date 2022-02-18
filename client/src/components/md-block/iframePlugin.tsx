@@ -2,21 +2,18 @@ import { AtomList, createNode } from "@milkdown/utils";
 import { RemarkPlugin } from "@milkdown/core";
 import directive from "remark-directive";
 import { InputRule } from "prosemirror-inputrules";
+import { useNodeCtx } from "@milkdown/react";
 
 const id = "iframe";
-const iframe = createNode(() => ({
+export const iframe = createNode(() => ({
   id,
   schema: () => ({
     inline: true,
-
     attrs: {
       src: { default: null },
     },
-
     group: "inline",
-
     marks: "",
-
     parseDOM: [
       {
         tag: "iframe",
@@ -30,18 +27,13 @@ const iframe = createNode(() => ({
         },
       },
     ],
-
-    toDOM: (node) => ["iframe", { ...node.attrs, class: "iframe" }, 0],
-
-    remarkPlugins: () => [directive as RemarkPlugin],
-
+    toDOM: (node) => ["iframe", { ...node.attrs }, 0],
     parseMarkdown: {
       match: (node) => node.type === "textDirective" && node.name === "iframe",
       runner: (state, node, type) => {
         state.addNode(type, { src: (node.attributes as { src: string }).src });
       },
     },
-
     toMarkdown: {
       match: (node) => node.type.name === id,
       runner: (state, node) => {
@@ -66,6 +58,7 @@ const iframe = createNode(() => ({
       return tr;
     }),
   ],
+  remarkPlugins: () => [directive as RemarkPlugin],
 }));
 
-export const IFramePlugin = AtomList.create([iframe()]);
+export const iframePlugin = AtomList.create([iframe()]);

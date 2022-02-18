@@ -71,3 +71,8 @@
 // .ProseMirror-trailingBreak {
 //   display: none;
 // }
+
+.milkdown .editor {
+  max-width: none !important;
+  padding: 3.125rem 7.25rem;
+}

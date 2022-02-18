@@ -7,6 +7,7 @@ import { store } from "./redux";
 import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
 import theme from "./theme";
 import "./index.scss";
+import "./prism.css";
 
 ReactDOM.render(
   <React.StrictMode>

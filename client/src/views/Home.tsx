@@ -7,7 +7,7 @@ const Home: React.FC = () => {
   return (
     <React.Fragment>
       <NavigationBar />
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-7xl">
         <div className="flex justify-center pt-4">
           <RichTextBlock />
         </div>
