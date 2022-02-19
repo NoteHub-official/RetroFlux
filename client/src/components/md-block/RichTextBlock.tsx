@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/iframe-has-title */
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
@@ -11,16 +12,23 @@ import {
   editorViewCtx,
   serializerCtx,
   commandsCtx,
+  parserCtx,
 } from "@milkdown/core";
+import { Slice } from "@milkdown/prose";
 import { nord } from "@milkdown/theme-nord";
 import { EditorRef, ReactEditor, useEditor, useNodeCtx } from "@milkdown/react";
 import { commonmark, ToggleItalic } from "@milkdown/preset-commonmark";
 import { collaborative, y } from "@milkdown/plugin-collaborative";
 import { IndexeddbPersistence } from "y-indexeddb";
 import { WebrtcProvider } from "y-webrtc";
+import MonacoEditor, { OnMount } from "@monaco-editor/react";
 // plugins
 import cx from "classnames";
 import * as Y from "yjs";
+
+// @ts-ignore
+import { MonacoBinding } from "y-monaco";
+
 import { iframePlugin, iframe } from "./iframePlugin";
 import { listener, listenerCtx } from "@milkdown/plugin-listener";
 import { clipboard } from "@milkdown/plugin-clipboard";
@@ -191,31 +199,32 @@ const options = [
 const rndInt = Math.floor(Math.random() * 4) + 1;
 
 const ydoc = new Y.Doc();
-// const ydoc = doc.getSubdocs();
+const type = ydoc.getText("monaco");
 const yMap = ydoc.getMap("editor-states");
 yMap.set("editable", true);
 
-const provider = new WebrtcProvider("wysiwyg-room", ydoc);
+const provider = new WebrtcProvider("monaco-room", ydoc);
 
 provider.awareness.setLocalStateField("user", options[rndInt]);
 // provider.awareness.clientID = Math.floor(Math.random() * 100) + 1;
 
-const persistence = new IndexeddbPersistence("wysiwyg-room", ydoc);
+const persistence = new IndexeddbPersistence("monaco-room", ydoc);
 
 export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
   const [markdownText, setMarkdownText] = useState(defaultValue);
   const [editableState, setEditableState] = useState(true);
   const editable = React.useRef(true);
   const editorRef = useRef<EditorRef>(null);
+  const monacoRef = useRef<any>();
 
   const editor = useEditor(
     (root, renderReact) =>
       Editor.make()
         .config((ctx) => {
           ctx.set(rootCtx, root);
-          ctx.set(defaultValueCtx, defaultValue);
+          // ctx.set(defaultValueCtx, defaultValue);
           ctx.get(listenerCtx).markdownUpdated((ctx, markdown, prevMarkdown) => {
-            setMarkdownText(markdown);
+            // setMarkdownText(markdown);
           });
           ctx.set(editorViewOptionsCtx, { editable: () => editable.current });
         })
@@ -257,7 +266,34 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
         handleEditableSwitch();
       }
     });
+    type.observe(() => {
+      setMarkdownText(type.toJSON());
+    });
   }, []);
+
+  useEffect(() => {
+    handleMarkdownChange();
+  }, [markdownText, editorRef]);
+
+  const handleMarkdownChange = () => {
+    if (editorRef.current) {
+      const editor = editorRef.current?.get();
+
+      editor?.action((ctx) => {
+        // update markdown text
+        const view = ctx.get(editorViewCtx);
+        const parser = ctx.get(parserCtx);
+        try {
+          const doc = parser(markdownText);
+          if (!doc) return;
+          const state = view.state;
+          view.dispatch(state.tr.replace(0, state.doc.content.size, new Slice(doc.content, 0, 0)));
+        } catch {
+          return;
+        }
+      });
+    }
+  };
 
   const handlePrint = () => {
     if (editorRef.current !== null) {
@@ -304,13 +340,42 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
     }
   };
 
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    monacoRef.current = editor;
+    const monacoBinding = new MonacoBinding(
+      type,
+      editor.getModel(),
+      new Set([editor]),
+      provider.awareness
+    );
+  };
+
   return (
     <div className="md-block min-w-full prose">
       <Button onMouseDown={handleEditableSwitch}>{editableState ? "Preview" : "Edit"}</Button>
       <Button onMouseDown={handlePrint}>Print</Button>
       <Button onMouseDown={toggleItalic}>Italic</Button>
-
-      <ReactEditor editor={editor} ref={editorRef} />
+      <MonacoEditor
+        defaultValue={markdownText}
+        defaultLanguage="markdown"
+        onMount={handleEditorDidMount}
+        // onChange={(value) => setMarkdownText(value || "")}
+        theme="vs-dark"
+        height="50vh"
+        options={{
+          wordWrap: "on",
+          minimap: { enabled: false },
+          showUnused: false,
+          folding: false,
+          lineNumbersMinChars: 3,
+          fontSize: 16,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+        }}
+      />
+      <div className="max-h-[50vh] overflow-scroll">
+        <ReactEditor editor={editor} ref={editorRef} />
+      </div>
       <pre>{markdownText}</pre>
     </div>
   );
@@ -328,10 +393,13 @@ const CustomImage: React.FC = ({ children }) => {
 
 const ReactIframe = () => {
   const { node } = useNodeCtx();
-
+  console.log(node);
   return (
-    <div className="react-iframe border">
-      <iframe src={node.attrs.src} className="w-full min-h-[400px]" />
+    <div className="react-iframe border p-2 rounded-lg" contentEditable={false}>
+      <div className="bg-gray-300 h-8 mb-2 rounded-md flex items-center px-2">
+        <div className="text-gray-50">{node.attrs.src}</div>
+      </div>
+      <iframe src={node.attrs.src} className="w-full min-h-[400px] rounded-md" />
     </div>
   );
 };
