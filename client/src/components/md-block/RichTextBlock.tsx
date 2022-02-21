@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/iframe-has-title */
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import ReactMarkdown from "react-markdown";
+
 import { Textarea, useColorModeValue, Code, Button } from "@chakra-ui/react";
 // wysiwyg
 import {
@@ -203,12 +203,12 @@ const type = ydoc.getText("monaco");
 const yMap = ydoc.getMap("editor-states");
 yMap.set("editable", true);
 
-const provider = new WebrtcProvider("monaco-room", ydoc);
+const provider = new WebrtcProvider("milkdown-room", ydoc);
 
 provider.awareness.setLocalStateField("user", options[rndInt]);
 // provider.awareness.clientID = Math.floor(Math.random() * 100) + 1;
 
-const persistence = new IndexeddbPersistence("monaco-room", ydoc);
+const persistence = new IndexeddbPersistence("milkdown-room", ydoc);
 
 export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
   const [markdownText, setMarkdownText] = useState(defaultValue);
@@ -217,45 +217,44 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
   const editorRef = useRef<EditorRef>(null);
   const monacoRef = useRef<any>();
 
-  const editor = useEditor(
-    (root, renderReact) =>
-      Editor.make()
-        .config((ctx) => {
-          ctx.set(rootCtx, root);
-          // ctx.set(defaultValueCtx, defaultValue);
-          ctx.get(listenerCtx).markdownUpdated((ctx, markdown, prevMarkdown) => {
-            // setMarkdownText(markdown);
-          });
-          ctx.set(editorViewOptionsCtx, { editable: () => editable.current });
+  const editor = useEditor((root, renderReact) =>
+    Editor.make()
+      .config((ctx) => {
+        ctx.set(rootCtx, root);
+        // ctx.set(defaultValueCtx, defaultValue);
+        ctx.get(listenerCtx).markdownUpdated((ctx, markdown, prevMarkdown) => {
+          setMarkdownText(markdown);
+        });
+        ctx.set(editorViewOptionsCtx, { editable: () => editable.current });
+      })
+      .use(nord)
+      .use([
+        iframe({
+          view: renderReact(ReactIframe),
+        }),
+      ])
+      .use(
+        gfm
+          .configure(paragraph, { view: renderReact(CustomParagraph) })
+          .configure(image, { view: renderReact(CustomImage) })
+        // .configure(codeFence, { view: renderReact(CustomCodeFence) })
+      )
+      .use(listener)
+      .use(clipboard)
+      .use(cursor)
+      .use(prism)
+      .use(diagram)
+      .use(tooltip)
+      .use(math)
+      .use(emoji)
+      .use(indent)
+      .use(slash)
+      .use(
+        collaborative.configure(y, {
+          doc: ydoc,
+          awareness: provider.awareness,
         })
-        .use(nord)
-        .use([
-          iframe({
-            view: renderReact(ReactIframe),
-          }),
-        ])
-        .use(
-          gfm
-            .configure(paragraph, { view: renderReact(CustomParagraph) })
-            .configure(image, { view: renderReact(CustomImage) })
-          // .configure(codeFence, { view: renderReact(CustomCodeFence) })
-        )
-        .use(listener)
-        .use(clipboard)
-        .use(cursor)
-        .use(prism)
-        .use(diagram)
-        .use(tooltip)
-        .use(math)
-        .use(emoji)
-        .use(indent)
-        .use(slash)
-    // .use(
-    //   collaborative.configure(y, {
-    //     doc: ydoc,
-    //     awareness: provider.awareness,
-    //   })
-    // )
+      )
   );
 
   useEffect(() => {
@@ -272,7 +271,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    handleMarkdownChange();
+    // handleMarkdownChange();
   }, [markdownText, editorRef]);
 
   const handleMarkdownChange = () => {
@@ -355,7 +354,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
       <Button onMouseDown={handleEditableSwitch}>{editableState ? "Preview" : "Edit"}</Button>
       <Button onMouseDown={handlePrint}>Print</Button>
       <Button onMouseDown={toggleItalic}>Italic</Button>
-      <MonacoEditor
+      {/* <MonacoEditor
         defaultValue={markdownText}
         defaultLanguage="markdown"
         onMount={handleEditorDidMount}
@@ -372,7 +371,7 @@ export const RichTextBlock: React.FC<RichTextBlockProps> = (props) => {
           scrollBeyondLastLine: false,
           automaticLayout: true,
         }}
-      />
+      /> */}
       <div className="max-h-[50vh] overflow-scroll">
         <ReactEditor editor={editor} ref={editorRef} />
       </div>
